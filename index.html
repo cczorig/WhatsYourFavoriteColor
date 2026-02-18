@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's Your Favorite Color?</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=Bebas+Neue&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --off-black: #1a1a1a;
+    --charcoal: #2a2a2a;
+    --white: #f5f5f5;
+    --off-white: #e8e8e8;
+    --gray: #6a6a6a;
+    --accent: #ff0033;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Special Elite', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grunge texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px),
+      repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.3;
+  }
+
+  /* Ink splatter decorations */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 10%;
+    right: 5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,0,51,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    animation: pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.2); opacity: 0.15; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    padding-bottom: 30px;
+    border-bottom: 3px solid var(--white);
+    position: relative;
+  }
+
+  header::after {
+    content: '★';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    padding: 0 15px;
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+
+  .title-ornament {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gray);
+    font-family: 'Special Elite', monospace;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+    text-shadow: 3px 3px 0 var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: var(--gray);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .streak-counter {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+
+  .streak-item {
+    text-align: center;
+    padding: 12px 20px;
+    background: var(--off-black);
+    border: 2px solid var(--white);
+    box-shadow: 3px 3px 0 rgba(255,0,51,0.3);
+  }
+
+  .streak-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.1);
+  }
+
+  .streak-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 4px;
+    font-family: 'Special Elite', monospace;
+  }
+
+  .streak-icon {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+  }
+
+  .info-banner {
+    background: var(--charcoal);
+    border: 2px solid var(--white);
+    padding: 12px 20px;
+    margin-bottom: 40px;
+    font-size: 0.8rem;
+    color: var(--off-white);
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0 rgba(255,0,51,0.3);
+  }
+  .info-banner strong { 
+    color: var(--accent); 
+    font-weight: 700;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* Today's picker card */
+  .today-card {
+    background: var(--off-black);
+    border: 3px solid var(--white);
+    padding: 40px;
+    margin-bottom: 60px;
+    box-shadow: 8px 8px 0 rgba(255,255,255,0.1);
+    position: relative;
+  }
+
+  .today-card::before {
+    content: '✦';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--black);
+    padding: 0 10px;
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+
+  .today-label {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 30px;
+    font-family: 'Special Elite', monospace;
+    border-bottom: 1px solid var(--charcoal);
+    padding-bottom: 10px;
+  }
+
+  .pickers-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 600px) {
+    .pickers-row { grid-template-columns: 1fr; gap: 50px; }
+  }
+
+  .picker-section {
+    border: 2px dashed var(--charcoal);
+    padding: 24px;
+    position: relative;
+  }
+
+  .picker-section::before {
+    content: '◆';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--off-black);
+    padding: 0 8px;
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
+
+  .picker-section h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    margin-bottom: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--white);
+  }
+
+  .picker-section .who-sub {
+    font-size: 0.7rem;
+    color: var(--gray);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* Color Wheel */
+  .wheel-wrapper {
+    position: relative;
+    width: 180px;
+    margin: 0 auto 20px;
+  }
+
+  .color-wheel-canvas {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    cursor: crosshair;
+    display: block;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 20px rgba(255,0,51,0.3), inset 0 0 30px rgba(0,0,0,0.5);
+    transition: box-shadow 0.2s;
+  }
+  .color-wheel-canvas:hover {
+    box-shadow: 0 0 30px rgba(255,0,51,0.5), inset 0 0 30px rgba(0,0,0,0.5);
+  }
+
+  .wheel-cursor {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 1px var(--black), 0 4px 8px rgba(0,0,0,0.5);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: top 0.1s, left 0.1s;
+  }
+
+  .brightness-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .brightness-slider-wrap label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray);
+    white-space: nowrap;
+    font-family: 'Special Elite', monospace;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 0;
+    background: linear-gradient(to right, var(--white), var(--black));
+    border: 1px solid var(--white);
+    cursor: pointer;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 0;
+    background: var(--accent);
+    border: 2px solid var(--white);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+
+  .color-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  .color-swatch {
+    width: 50px;
+    height: 50px;
+    border-radius: 0;
+    border: 3px solid var(--white);
+    flex-shrink: 0;
+    box-shadow: 4px 4px 0 rgba(255,0,51,0.2), inset 0 2px 8px rgba(0,0,0,0.3);
+    transition: background 0.2s;
+  }
+
+  .hex-display {
+    font-family: 'Special Elite', monospace;
+    font-size: 1rem;
+    color: var(--off-white);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-bottom: 2px solid var(--charcoal);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+    text-transform: uppercase;
+  }
+  .hex-display:hover { 
+    color: var(--accent); 
+    border-color: var(--accent);
+  }
+
+  .color-note-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--charcoal);
+    padding: 8px 0;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.9rem;
+    background: transparent;
+    color: var(--white);
+    outline: none;
+    margin-top: 16px;
+    transition: border-color 0.2s;
+    text-align: center;
+  }
+  .color-note-input::placeholder { 
+    color: var(--gray); 
+    font-family: 'Special Elite', monospace;
+    font-size: 0.75rem;
+  }
+  .color-note-input:focus { border-color: var(--accent); }
+
+  .save-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: var(--white);
+    color: var(--black);
+    border: 3px solid var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 4px 4px 0 var(--accent);
+    position: relative;
+  }
+  .save-btn:hover { 
+    background: var(--accent); 
+    color: var(--white);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .save-btn:active { 
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 var(--accent);
+  }
+  .save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .save-confirmation {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif;
+    min-height: 20px;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .save-confirmation.show { opacity: 1; }
+
+  /* History */
+  .history-section {
+    padding-top: 20px;
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--white);
+    position: relative;
+  }
+
+  .history-header::after {
+    content: '✦';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    padding: 0 15px;
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+
+  .history-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .entry-count {
+    font-size: 0.75rem;
+    color: var(--gray);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: 'Special Elite', monospace;
+  }
+
+  .export-btn {
+    padding: 10px 20px;
+    background: var(--accent);
+    color: var(--white);
+    border: 2px solid var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 3px 3px 0 rgba(255,255,255,0.2);
+  }
+  .export-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(255,255,255,0.2);
+  }
+
+  .important-marker {
+    position: absolute;
+    top: -8px;
+    right: 40px;
+    background: var(--accent);
+    color: var(--white);
+    padding: 3px 10px;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    cursor: help;
+  }
+
+  .important-marker::before {
+    content: '★ ';
+  }
+
+  .mark-important-btn {
+    position: absolute;
+    top: 8px;
+    right: 40px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px 8px;
+    transition: color 0.2s;
+  }
+  .mark-important-btn:hover { color: var(--accent); }
+  .mark-important-btn.marked { color: var(--accent); }
+
+  .entries-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .entry-card {
+    background: var(--off-black);
+    border: 3px solid var(--white);
+    padding: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 6px 6px 0 rgba(255,255,255,0.1);
+  }
+  .entry-card:hover {
+    box-shadow: 8px 8px 0 rgba(255,0,51,0.2);
+    transform: translate(-2px, -2px);
+  }
+
+  @media (max-width: 540px) {
+    .entry-card { grid-template-columns: auto 1fr; }
+    .entry-card .entry-person { grid-column: 1 / -1; }
+  }
+
+  .entry-date {
+    text-align: center;
+    min-width: 60px;
+    border-right: 2px solid var(--charcoal);
+    padding-right: 20px;
+  }
+  .entry-date .day-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--white);
+  }
+  .entry-date .month-yr {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 4px;
+    font-family: 'Special Elite', monospace;
+  }
+
+  .entry-person {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .entry-swatch {
+    width: 45px;
+    height: 45px;
+    border-radius: 0;
+    flex-shrink: 0;
+    border: 3px solid var(--white);
+    box-shadow: 3px 3px 0 rgba(255,0,51,0.2);
+  }
+  .entry-person-info .person-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .entry-person-info .person-hex {
+    font-size: 0.75rem;
+    color: var(--gray);
+    letter-spacing: 0.1em;
+    font-family: 'Special Elite', monospace;
+    text-transform: uppercase;
+  }
+  .entry-person-info .person-note {
+    font-size: 0.8rem;
+    color: var(--off-white);
+    margin-top: 3px;
+    font-family: 'Permanent Marker', cursive;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 4px 8px;
+    transition: color 0.2s;
+    font-family: 'Bebas Neue', sans-serif;
+  }
+  .delete-btn:hover { color: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray);
+    font-size: 0.9rem;
+    border: 2px dashed var(--charcoal);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--gray);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .setup-needed {
+    background: var(--off-black);
+    border: 3px solid var(--accent);
+    padding: 40px;
+    margin: 40px auto;
+    max-width: 700px;
+    text-align: center;
+  }
+  .setup-needed h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 20px;
+    letter-spacing: 0.15em;
+  }
+  .setup-needed ol {
+    text-align: left;
+    margin: 20px 0;
+    padding-left: 30px;
+  }
+  .setup-needed li {
+    margin: 14px 0;
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+  .setup-needed code {
+    background: var(--charcoal);
+    padding: 2px 8px;
+    font-size: 0.85em;
+    color: var(--accent);
+    font-family: 'Special Elite', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="title-ornament">— EST. 2026 —</span>
+    <h1>WHAT'S YOUR<br>FAVORITE COLOR?</h1>
+    <p class="subtitle">A COLLECTION OF DAILY HUES</p>
+    <div class="streak-counter" id="streak-counter" style="display: none;">
+      <div class="streak-item">
+        <div class="streak-icon">🔥</div>
+        <div class="streak-number" id="current-streak">0</div>
+        <div class="streak-label">DAY STREAK</div>
+      </div>
+      <div class="streak-item">
+        <div class="streak-icon">⭐</div>
+        <div class="streak-number" id="longest-streak">0</div>
+        <div class="streak-label">BEST STREAK</div>
+      </div>
+      <div class="streak-item">
+        <div class="streak-icon">📅</div>
+        <div class="streak-number" id="total-days">0</div>
+        <div class="streak-label">TOTAL DAYS</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Setup Instructions (shown if Firebase not configured) -->
+  <div id="setup-instructions" style="display: none;">
+    <div class="setup-needed">
+      <h3>⚠ FIREBASE SETUP REQUIRED</h3>
+      <p>TO ENABLE CLOUD SYNC, FOLLOW THESE STEPS:</p>
+      <ol>
+        <li>Go to <a href="https://console.firebase.google.com/" target="_blank" style="color: var(--accent);">Firebase Console</a></li>
+        <li>Click "Add project" and create a new project</li>
+        <li>In Project Settings, scroll to "Your apps" and click the web icon (&lt;/&gt;)</li>
+        <li>Register your app and copy the <code>firebaseConfig</code> values</li>
+        <li>Paste your config values in the <code>firebaseConfig</code> object in this HTML file</li>
+        <li>In Firebase Console, go to "Realtime Database" → "Create Database" → Start in test mode</li>
+      </ol>
+      <p style="margin-top: 24px; font-size: 0.85rem; letter-spacing: 0.1em;">ONCE CONFIGURED, RELOAD THIS PAGE!</p>
+    </div>
+  </div>
+
+  <!-- Main App (shown when Firebase is configured) -->
+  <div id="main-app" style="display: none;">
+    <div class="info-banner" id="storage-info">
+      <strong>★ SYNCED ★</strong> YOUR ENTRIES SYNC IN REAL-TIME ACROSS ALL DEVICES
+    </div>
+
+    <!-- TODAY'S ENTRY -->
+    <div class="today-card">
+      <div class="today-label" id="today-label">TODAY</div>
+      <div class="pickers-row">
+        <!-- Person 1 -->
+        <div class="picker-section" id="section-you">
+          <h3 id="name-you-display">YOU</h3>
+          <p class="who-sub">YOUR COLOR TODAY</p>
+          <div class="wheel-wrapper">
+            <canvas class="color-wheel-canvas" id="wheel-you" width="360" height="360"></canvas>
+            <div class="wheel-cursor" id="cursor-you" style="top:90px;left:90px;"></div>
+          </div>
+          <div class="brightness-slider-wrap">
+            <label>LIGHT</label>
+            <input type="range" id="bright-you" min="0" max="1" step="0.01" value="1">
+            <label>DARK</label>
+          </div>
+          <div class="color-preview-row">
+            <div class="color-swatch" id="swatch-you" style="background:#e05a6e;"></div>
+            <span class="hex-display" id="hex-you">#e05a6e</span>
+          </div>
+          <input class="color-note-input" id="note-you" type="text" placeholder="describe this color..." maxlength="60">
+          <button class="save-btn" onclick="saveColor('you')" id="save-btn-you">SAVE MY COLOR</button>
+          <div class="save-confirmation" id="save-confirmation-you">★ SAVED ★</div>
+        </div>
+
+        <!-- Person 2 -->
+        <div class="picker-section" id="section-partner">
+          <h3 id="name-partner-display">PARTNER</h3>
+          <p class="who-sub">THEIR COLOR TODAY</p>
+          <div class="wheel-wrapper">
+            <canvas class="color-wheel-canvas" id="wheel-partner" width="360" height="360"></canvas>
+            <div class="wheel-cursor" id="cursor-partner" style="top:90px;left:90px;"></div>
+          </div>
+          <div class="brightness-slider-wrap">
+            <label>LIGHT</label>
+            <input type="range" id="bright-partner" min="0" max="1" step="0.01" value="1">
+            <label>DARK</label>
+          </div>
+          <div class="color-preview-row">
+            <div class="color-swatch" id="swatch-partner" style="background:#5a7ee0;"></div>
+            <span class="hex-display" id="hex-partner">#5a7ee0</span>
+          </div>
+          <input class="color-note-input" id="note-partner" type="text" placeholder="describe this color..." maxlength="60">
+          <button class="save-btn" onclick="saveColor('partner')" id="save-btn-partner">SAVE MY COLOR</button>
+          <div class="save-confirmation" id="save-confirmation-partner">★ SAVED ★</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="history-header">
+        <h2>THE ARCHIVE</h2>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <button class="export-btn" onclick="exportAsImage()">EXPORT IMAGE</button>
+          <span class="entry-count" id="entry-count"></span>
+        </div>
+      </div>
+      <div class="entries-grid" id="entries-grid">
+        <div class="loading">LOADING YOUR ARCHIVE...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR VALUES
+// ═══════════════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyC_NouWpnmAWFtxZbtZlgknSTvubGFw7w0",
+  authDomain: "favorite-color-tracker.firebaseapp.com",
+  databaseURL: "https://favorite-color-tracker-default-rtdb.firebaseio.com",
+  projectId: "favorite-color-tracker",
+  storageBucket: "favorite-color-tracker.firebasestorage.app",
+  messagingSenderId: "576978279380",
+  appId: "1:576978279380:web:e589d62531e569af88d441",
+  measurementId: "G-8TTW6F990K"
+};
+
+// Check if Firebase is configured
+const isConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY_HERE";
+
+if (!isConfigured) {
+  document.getElementById('setup-instructions').style.display = 'block';
+} else {
+  // Initialize Firebase
+  try {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    document.getElementById('main-app').style.display = 'block';
+    
+    // ── Database References ────────────────────────────────────────────────
+    const namesRef = db.ref('names');
+    const entriesRef = db.ref('entries');
+
+    // ── Names ──────────────────────────────────────────────────────────────
+    async function getNames() {
+      try {
+        const snapshot = await namesRef.once('value');
+        const data = snapshot.val() || {};
+        return {
+          you: data.you || 'You',
+          partner: data.partner || 'Partner'
+        };
+      } catch (e) {
+        console.error('Error getting names:', e);
+        return { you: 'You', partner: 'Partner' };
+      }
+    }
+
+    async function setName(who, val) {
+      const finalVal = val.trim() || (who === 'you' ? 'You' : 'Partner');
+      try {
+        await namesRef.child(who).set(finalVal);
+      } catch (e) {
+        console.error('Error setting name:', e);
+      }
+    }
+
+    function refreshNames() {
+      namesRef.on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        document.getElementById('name-you-display').textContent = (data.you || 'You').toUpperCase();
+        document.getElementById('name-partner-display').textContent = (data.partner || 'Partner').toUpperCase();
+      });
+    }
+
+    // Make names editable on click
+    ['you', 'partner'].forEach(who => {
+      const el = document.getElementById('name-' + who + '-display');
+      el.style.cursor = 'pointer';
+      el.title = 'Click to rename';
+      el.addEventListener('click', async () => {
+        const n = await getNames();
+        const current = n[who];
+        const val = prompt('Enter name for ' + (who === 'you' ? 'you' : 'your partner') + ':', current);
+        if (val !== null) await setName(who, val);
+      });
+    });
+
+    refreshNames();
+
+    // ── Color Wheel ────────────────────────────────────────────────────────
+    function drawWheel(canvas, brightness) {
+      const ctx = canvas.getContext('2d');
+      const cx = canvas.width / 2, cy = canvas.height / 2, r = cx;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let angle = 0; angle < 360; angle++) {
+        const startAngle = (angle - 1) * Math.PI / 180;
+        const endAngle   = (angle + 1) * Math.PI / 180;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        grad.addColorStop(0,   `hsl(${angle},0%,${100*brightness}%)`);
+        grad.addColorStop(1,   `hsl(${angle},100%,${50*brightness}%)`);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+    }
+
+    const state = {
+      you:     { h: 348, s: 0.6, brightness: 1, hex: '#e05a6e', cx: 90, cy: 90 },
+      partner: { h: 220, s: 0.6, brightness: 1, hex: '#5a7ee0', cx: 90, cy: 90 }
+    };
+
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      };
+      return '#' + [f(0),f(8),f(4)].map(x => Math.round(255*x).toString(16).padStart(2,'0')).join('');
+    }
+
+    function pickColor(who, canvasX, canvasY) {
+      const canvas = document.getElementById('wheel-' + who);
+      const r = canvas.width / 2;
+      const dx = canvasX - r, dy = canvasY - r;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > r) return;
+
+      const angle = ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
+      const sat   = dist / r;
+      state[who].h = angle;
+      state[who].s = sat;
+
+      const l = 50 * state[who].brightness;
+      const s = 100 * sat;
+      const hex = hslToHex(angle, s, l);
+      state[who].hex = hex;
+      state[who].cx = canvasX;
+      state[who].cy = canvasY;
+
+      const scaledX = canvasX / 2, scaledY = canvasY / 2;
+      document.getElementById('cursor-' + who).style.left = scaledX + 'px';
+      document.getElementById('cursor-' + who).style.top  = scaledY + 'px';
+      document.getElementById('cursor-' + who).style.background = hex;
+      document.getElementById('swatch-' + who).style.background = hex;
+      document.getElementById('hex-' + who).textContent = hex;
+    }
+
+    function setupWheel(who) {
+      const canvas = document.getElementById('wheel-' + who);
+      const bright = document.getElementById('bright-' + who);
+
+      drawWheel(canvas, state[who].brightness);
+
+      let dragging = false;
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
+      }
+
+      canvas.addEventListener('mousedown',  e => { dragging = true; const [x,y] = getPos(e); pickColor(who, x, y); });
+      canvas.addEventListener('mousemove',  e => { if (dragging) { const [x,y] = getPos(e); pickColor(who, x, y); }});
+      window.addEventListener('mouseup',   () => { dragging = false; });
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); const [x,y] = getPos(e); pickColor(who, x, y); }, {passive:false});
+      canvas.addEventListener('touchmove',  e => { e.preventDefault(); const [x,y] = getPos(e); pickColor(who, x, y); }, {passive:false});
+
+      bright.addEventListener('input', () => {
+        state[who].brightness = parseFloat(bright.value);
+        drawWheel(canvas, state[who].brightness);
+        const l = 50 * state[who].brightness;
+        const hex = hslToHex(state[who].h, state[who].s * 100, l);
+        state[who].hex = hex;
+        document.getElementById('swatch-' + who).style.background = hex;
+        document.getElementById('hex-' + who).textContent = hex;
+        document.getElementById('cursor-' + who).style.background = hex;
+      });
+
+      bright.style.background = `linear-gradient(to right, #fff, hsl(${state[who].h},70%,50%), #000)`;
+    }
+
+    setupWheel('you');
+    setupWheel('partner');
+
+    pickColor('you',     200, 260);
+    pickColor('partner', 160, 120);
+
+    // ── Today label ────────────────────────────────────────────────────────
+    const todayDate = new Date();
+    document.getElementById('today-label').textContent =
+      todayDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}).toUpperCase();
+
+    // ── Storage ────────────────────────────────────────────────────────────
+    async function saveColor(who) {
+      const saveBtn = document.getElementById('save-btn-' + who);
+      saveBtn.disabled = true;
+      
+      const dateKey = todayDate.toISOString().slice(0,10);
+      const n = await getNames();
+      
+      const colorData = {
+        color: state[who].hex, 
+        note: document.getElementById('note-' + who).value.trim(), 
+        name: n[who]
+      };
+
+      try {
+        // Get existing entry for today
+        const snapshot = await entriesRef.child(dateKey).once('value');
+        const existing = snapshot.val() || { date: dateKey, timestamp: Date.now() };
+        
+        // Update only this person's data
+        existing[who] = colorData;
+        existing.timestamp = Date.now();
+        
+        await entriesRef.child(dateKey).set(existing);
+        
+        const conf = document.getElementById('save-confirmation-' + who);
+        conf.classList.add('show');
+        setTimeout(() => conf.classList.remove('show'), 2400);
+      } catch (e) {
+        console.error('Error saving:', e);
+        alert('Failed to save. Please check your internet connection.');
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+
+    window.saveColor = saveColor;
+
+    async function deleteEntry(dateKey) {
+      if (!confirm('Remove this entry from the archive?')) return;
+      try {
+        await entriesRef.child(dateKey).remove();
+      } catch (e) {
+        console.error('Error deleting:', e);
+        alert('Failed to delete. Please try again.');
+      }
+    }
+
+    window.deleteEntry = deleteEntry;
+
+    function renderHistory() {
+      entriesRef.orderByChild('timestamp').on('value', (snapshot) => {
+        const grid = document.getElementById('entries-grid');
+        const countEl = document.getElementById('entry-count');
+        
+        const entries = [];
+        snapshot.forEach((child) => {
+          entries.unshift(child.val()); // Add to beginning to show newest first
+        });
+
+        countEl.textContent = entries.length === 0 ? '' : entries.length + (entries.length === 1 ? ' ENTRY' : ' ENTRIES');
+
+        // Calculate streaks
+        calculateStreaks(entries);
+
+        if (!entries.length) {
+          grid.innerHTML = '<div class="empty-state">YOUR ARCHIVE IS EMPTY — SAVE YOUR FIRST COLORS ABOVE</div>';
+          return;
+        }
+
+        grid.innerHTML = entries.map(e => {
+          const d = new Date(e.date + 'T12:00:00');
+          const day = d.getDate();
+          const mon = d.toLocaleString('en-US', {month:'short'}).toUpperCase();
+          const yr  = d.getFullYear();
+
+          // Build person sections only if they exist
+          let personSections = '';
+          
+          if (e.you) {
+            personSections += `
+            <div class="entry-person">
+              <div class="entry-swatch" style="background:${e.you.color};"></div>
+              <div class="entry-person-info">
+                <div class="person-name">${escHtml(e.you.name).toUpperCase()}</div>
+                <div class="person-hex">${e.you.color}</div>
+                ${e.you.note ? `<div class="person-note">${escHtml(e.you.note)}</div>` : ''}
+              </div>
+            </div>`;
+          }
+          
+          if (e.partner) {
+            personSections += `
+            <div class="entry-person">
+              <div class="entry-swatch" style="background:${e.partner.color};"></div>
+              <div class="entry-person-info">
+                <div class="person-name">${escHtml(e.partner.name).toUpperCase()}</div>
+                <div class="person-hex">${e.partner.color}</div>
+                ${e.partner.note ? `<div class="person-note">${escHtml(e.partner.note)}</div>` : ''}
+              </div>
+            </div>`;
+          }
+
+          // Important marker
+          const importantMarker = e.important 
+            ? `<div class="important-marker" title="${escHtml(e.importantLabel)}">${escHtml(e.importantLabel)}</div>`
+            : '';
+
+          return `
+          <div class="entry-card">
+            ${importantMarker}
+            <div class="entry-date">
+              <div class="day-num">${day}</div>
+              <div class="month-yr">${mon} ${yr}</div>
+            </div>
+            ${personSections}
+            <button class="mark-important-btn ${e.important ? 'marked' : ''}" onclick="markImportant('${e.date}')" title="Mark as important">★</button>
+            <button class="delete-btn" onclick="deleteEntry('${e.date}')" title="Remove entry">✕</button>
+          </div>`;
+        }).join('');
+      });
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Streak Counter ─────────────────────────────────────────────────────
+    function calculateStreaks(entries) {
+      if (!entries.length) {
+        document.getElementById('streak-counter').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('streak-counter').style.display = 'flex';
+
+      // Sort entries by date (newest first)
+      const sortedEntries = [...entries].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+      );
+
+      // Calculate current streak
+      let currentStreak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      for (let i = 0; i < sortedEntries.length; i++) {
+        const entryDate = new Date(sortedEntries[i].date + 'T00:00:00');
+        const expectedDate = new Date(today);
+        expectedDate.setDate(today.getDate() - i);
+        expectedDate.setHours(0, 0, 0, 0);
+        
+        if (entryDate.getTime() === expectedDate.getTime()) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+
+      // Calculate longest streak
+      let longestStreak = 0;
+      let tempStreak = 1;
+      
+      for (let i = 1; i < sortedEntries.length; i++) {
+        const prevDate = new Date(sortedEntries[i - 1].date + 'T00:00:00');
+        const currDate = new Date(sortedEntries[i].date + 'T00:00:00');
+        const dayDiff = Math.floor((prevDate - currDate) / (1000 * 60 * 60 * 24));
+        
+        if (dayDiff === 1) {
+          tempStreak++;
+          longestStreak = Math.max(longestStreak, tempStreak);
+        } else {
+          tempStreak = 1;
+        }
+      }
+      
+      longestStreak = Math.max(longestStreak, currentStreak);
+
+      // Update display
+      document.getElementById('current-streak').textContent = currentStreak;
+      document.getElementById('longest-streak').textContent = longestStreak;
+      document.getElementById('total-days').textContent = entries.length;
+    }
+
+    // ── Important Dates ────────────────────────────────────────────────────
+    async function markImportant(dateKey) {
+      try {
+        const snapshot = await entriesRef.child(dateKey).once('value');
+        const entry = snapshot.val();
+        if (!entry) return;
+
+        const label = prompt('What makes this day special?', entry.importantLabel || '');
+        if (label === null) return;
+
+        if (label.trim()) {
+          entry.important = true;
+          entry.importantLabel = label.trim();
+        } else {
+          entry.important = false;
+          delete entry.importantLabel;
+        }
+
+        await entriesRef.child(dateKey).set(entry);
+      } catch (e) {
+        console.error('Error marking important:', e);
+      }
+    }
+
+    window.markImportant = markImportant;
+
+    // ── Export as Image ────────────────────────────────────────────────────
+    async function exportAsImage() {
+      const exportBtn = document.querySelector('.export-btn');
+      exportBtn.textContent = 'GENERATING...';
+      exportBtn.disabled = true;
+
+      try {
+        // Get entries
+        const snapshot = await entriesRef.once('value');
+        const entries = [];
+        snapshot.forEach((child) => {
+          entries.unshift(child.val());
+        });
+
+        if (!entries.length) {
+          alert('No entries to export!');
+          exportBtn.textContent = 'EXPORT IMAGE';
+          exportBtn.disabled = false;
+          return;
+        }
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Canvas dimensions
+        const padding = 60;
+        const entryHeight = 120;
+        const entryGap = 20;
+        const headerHeight = 240;
+        const width = 1080;
+        const height = headerHeight + (entries.length * (entryHeight + entryGap)) + padding * 2;
+        
+        canvas.width = width;
+        canvas.height = height;
+
+        // Background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, width, height);
+
+        // Grid texture
+        ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < width; i += 3) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i, height);
+          ctx.stroke();
+        }
+
+        // Header
+        ctx.fillStyle = '#f5f5f5';
+        ctx.font = '24px "Special Elite", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('— EST. 2026 —', width / 2, padding + 30);
+
+        ctx.font = 'bold 70px "Bebas Neue", sans-serif';
+        ctx.fillText("WHAT'S YOUR", width / 2, padding + 90);
+        ctx.fillText('FAVORITE COLOR?', width / 2, padding + 150);
+
+        ctx.font = '18px "Special Elite", monospace';
+        ctx.fillStyle = '#6a6a6a';
+        ctx.fillText('A COLLECTION OF DAILY HUES', width / 2, padding + 180);
+
+        // Entries
+        let yPos = headerHeight + padding;
+        
+        entries.forEach((entry, index) => {
+          const d = new Date(entry.date + 'T12:00:00');
+          const day = d.getDate();
+          const mon = d.toLocaleString('en-US', {month:'short'}).toUpperCase();
+          const yr = d.getFullYear();
+
+          // Entry background
+          ctx.fillStyle = '#1a1a1a';
+          ctx.fillRect(padding, yPos, width - padding * 2, entryHeight);
+
+          // Border
+          ctx.strokeStyle = '#f5f5f5';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(padding, yPos, width - padding * 2, entryHeight);
+
+          // Date
+          ctx.fillStyle = '#f5f5f5';
+          ctx.font = 'bold 48px "Bebas Neue", sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(day, padding + 30, yPos + 60);
+
+          ctx.font = '14px "Special Elite", monospace';
+          ctx.fillStyle = '#6a6a6a';
+          ctx.fillText(`${mon} ${yr}`, padding + 30, yPos + 80);
+
+          let xOffset = padding + 150;
+
+          // Person 1
+          if (entry.you) {
+            ctx.fillStyle = entry.you.color;
+            ctx.fillRect(xOffset, yPos + 25, 60, 60);
+            ctx.strokeStyle = '#f5f5f5';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(xOffset, yPos + 25, 60, 60);
+
+            ctx.fillStyle = '#f5f5f5';
+            ctx.font = 'bold 20px "Bebas Neue", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(entry.you.name.toUpperCase(), xOffset + 80, yPos + 45);
+
+            ctx.fillStyle = '#6a6a6a';
+            ctx.font = '16px "Special Elite", monospace';
+            ctx.fillText(entry.you.color, xOffset + 80, yPos + 70);
+
+            if (entry.you.note) {
+              ctx.fillStyle = '#f5f5f5';
+              ctx.font = '14px "Permanent Marker", cursive';
+              ctx.fillText(entry.you.note.substring(0, 30), xOffset + 80, yPos + 90);
+            }
+
+            xOffset += 400;
+          }
+
+          // Person 2
+          if (entry.partner) {
+            ctx.fillStyle = entry.partner.color;
+            ctx.fillRect(xOffset, yPos + 25, 60, 60);
+            ctx.strokeStyle = '#f5f5f5';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(xOffset, yPos + 25, 60, 60);
+
+            ctx.fillStyle = '#f5f5f5';
+            ctx.font = 'bold 20px "Bebas Neue", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(entry.partner.name.toUpperCase(), xOffset + 80, yPos + 45);
+
+            ctx.fillStyle = '#6a6a6a';
+            ctx.font = '16px "Special Elite", monospace';
+            ctx.fillText(entry.partner.color, xOffset + 80, yPos + 70);
+
+            if (entry.partner.note) {
+              ctx.fillStyle = '#f5f5f5';
+              ctx.font = '14px "Permanent Marker", cursive';
+              ctx.fillText(entry.partner.note.substring(0, 30), xOffset + 80, yPos + 90);
+            }
+          }
+
+          // Important marker
+          if (entry.important) {
+            ctx.fillStyle = '#ff0033';
+            ctx.fillRect(width - padding - 140, yPos - 10, 120, 25);
+            ctx.fillStyle = '#f5f5f5';
+            ctx.font = '14px "Bebas Neue", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('★ ' + entry.importantLabel.toUpperCase(), width - padding - 80, yPos + 8);
+          }
+
+          yPos += entryHeight + entryGap;
+        });
+
+        // Download
+        const link = document.createElement('a');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        link.download = `color-archive-${dateStr}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+      } catch (e) {
+        console.error('Export error:', e);
+        alert('Failed to export. Please try again.');
+      } finally {
+        exportBtn.textContent = 'EXPORT IMAGE';
+        exportBtn.disabled = false;
+      }
+    }
+
+    window.exportAsImage = exportAsImage;
+
+    renderHistory();
+
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    document.getElementById('setup-instructions').style.display = 'block';
+    document.getElementById('main-app').style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>
