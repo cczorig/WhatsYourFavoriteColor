@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Color Diary</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf6ee;
+    --warm-white: #faf4ed;
+    --ink: #1a1410;
+    --muted: #7a6a5a;
+    --border: #e0d5c8;
+    --accent: #c4956a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Decorative paper texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.03) 28px),
+      radial-gradient(ellipse at 20% 10%, rgba(196,149,106,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(196,149,106,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .title-ornament {
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    opacity: 0.4;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent);
+  }
+  .divider-ornament { color: var(--accent); font-size: 18px; }
+
+  /* Today's picker card */
+  .today-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 36px;
+    margin-bottom: 48px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(196,149,106,0.1);
+    animation: fadeUp 0.8s 0.15s ease both;
+  }
+
+  .today-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .today-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .pickers-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  @media (max-width: 600px) {
+    .pickers-row { grid-template-columns: 1fr; }
+  }
+
+  .picker-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+
+  .picker-section .who-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 18px;
+  }
+
+  /* Color Wheel */
+  .wheel-wrapper {
+    position: relative;
+    width: 180px;
+    margin: 0 auto 16px;
+  }
+
+  .color-wheel-canvas {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    cursor: crosshair;
+    display: block;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    transition: box-shadow 0.2s;
+  }
+  .color-wheel-canvas:hover {
+    box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+  }
+
+  .wheel-cursor {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: top 0.1s, left 0.1s;
+  }
+
+  .brightness-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .brightness-slider-wrap label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--accent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+
+  .color-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .color-swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    transition: background 0.2s;
+  }
+
+  .hex-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 1px;
+    transition: color 0.2s;
+  }
+  .hex-display:hover { color: var(--ink); }
+
+  .color-note-input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    margin-top: 12px;
+    transition: border-color 0.2s;
+  }
+  .color-note-input::placeholder { color: var(--border); }
+  .color-note-input:focus { border-color: var(--accent); }
+
+  .save-btn {
+    display: block;
+    width: 100%;
+    margin-top: 28px;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 2px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .save-btn:hover { background: #2e2420; }
+  .save-btn:active { transform: scale(0.99); }
+  .save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .save-confirmation {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-style: italic;
+    min-height: 20px;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .save-confirmation.show { opacity: 1; }
+
+  /* History */
+  .history-section {
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+  }
+
+  .history-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+  }
+
+  .entry-count {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .entries-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .entry-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+    animation: fadeIn 0.4s ease both;
+    transition: box-shadow 0.2s;
+    position: relative;
+  }
+  .entry-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  @media (max-width: 540px) {
+    .entry-card { grid-template-columns: auto 1fr; }
+    .entry-card .entry-colors { grid-column: 1 / -1; }
+  }
+
+  .entry-date {
+    text-align: center;
+    min-width: 50px;
+  }
+  .entry-date .day-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .entry-date .month-yr {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .entry-person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .entry-swatch {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .entry-person-info .person-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+  }
+  .entry-person-info .person-hex {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .entry-person-info .person-note {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--border);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px;
+    transition: color 0.2s;
+  }
+  .delete-btn:hover { color: #c47a7a; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-style: italic;
+    font-size: 1.1rem;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+  }
+
+  .info-banner {
+    background: rgba(196,149,106,0.08);
+    border: 1px solid rgba(196,149,106,0.2);
+    border-radius: 3px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-align: center;
+    animation: fadeIn 0.6s ease both;
+  }
+  .info-banner strong { color: var(--accent); font-weight: 600; }
+  .info-banner.error {
+    background: rgba(196, 106, 106, 0.08);
+    border-color: rgba(196, 106, 106, 0.2);
+  }
+  .info-banner.error strong { color: #c46a6a; }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .setup-needed {
+    background: white;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    padding: 32px;
+    margin: 40px auto;
+    max-width: 600px;
+    text-align: center;
+  }
+  .setup-needed h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .setup-needed ol {
+    text-align: left;
+    margin: 20px 0;
+    padding-left: 24px;
+  }
+  .setup-needed li {
+    margin: 12px 0;
+    line-height: 1.6;
+  }
+  .setup-needed code {
+    background: var(--cream);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 0.9em;
+    color: var(--ink);
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="title-ornament">♡ A shared record</span>
+    <h1>Our Color <em>Diary</em></h1>
+    <p class="subtitle">The hues that moved us, saved for always</p>
+  </header>
+
+  <!-- Setup Instructions (shown if Firebase not configured) -->
+  <div id="setup-instructions" style="display: none;">
+    <div class="setup-needed">
+      <h3>🔧 Firebase Setup Required</h3>
+      <p>To enable cloud sync, follow these steps:</p>
+      <ol>
+        <li>Go to <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a></li>
+        <li>Click "Add project" and create a new project</li>
+        <li>In Project Settings, scroll to "Your apps" and click the web icon (&lt;/&gt;)</li>
+        <li>Register your app and copy the <code>firebaseConfig</code> values</li>
+        <li>Paste your config values in the <code>firebaseConfig</code> object in this HTML file (around line 650)</li>
+        <li>In Firebase Console, go to "Realtime Database" → "Create Database" → Start in test mode</li>
+      </ol>
+      <p style="margin-top: 20px; font-style: italic;">Once configured, reload this page!</p>
+    </div>
+  </div>
+
+  <!-- Main App (shown when Firebase is configured) -->
+  <div id="main-app" style="display: none;">
+    <div class="info-banner" id="storage-info">
+      <strong>♡ Synced Diary</strong> — Your entries sync in real-time across all devices
+    </div>
+
+    <!-- TODAY'S ENTRY -->
+    <div class="today-card">
+      <div class="today-label" id="today-label">Today</div>
+      <div class="pickers-row">
+        <!-- Person 1 -->
+        <div class="picker-section" id="section-you">
+          <h3 id="name-you-display">You</h3>
+          <p class="who-sub">your color today</p>
+          <div class="wheel-wrapper">
+            <canvas class="color-wheel-canvas" id="wheel-you" width="360" height="360"></canvas>
+            <div class="wheel-cursor" id="cursor-you" style="top:90px;left:90px;"></div>
+          </div>
+          <div class="brightness-slider-wrap">
+            <label>Light</label>
+            <input type="range" id="bright-you" min="0" max="1" step="0.01" value="1">
+            <label>Dark</label>
+          </div>
+          <div class="color-preview-row">
+            <div class="color-swatch" id="swatch-you" style="background:#e05a6e;"></div>
+            <span class="hex-display" id="hex-you">#e05a6e</span>
+          </div>
+          <input class="color-note-input" id="note-you" type="text" placeholder="a word for this color…" maxlength="60">
+        </div>
+
+        <!-- Person 2 -->
+        <div class="picker-section" id="section-partner">
+          <h3 id="name-partner-display">Partner</h3>
+          <p class="who-sub">their color today</p>
+          <div class="wheel-wrapper">
+            <canvas class="color-wheel-canvas" id="wheel-partner" width="360" height="360"></canvas>
+            <div class="wheel-cursor" id="cursor-partner" style="top:90px;left:90px;"></div>
+          </div>
+          <div class="brightness-slider-wrap">
+            <label>Light</label>
+            <input type="range" id="bright-partner" min="0" max="1" step="0.01" value="1">
+            <label>Dark</label>
+          </div>
+          <div class="color-preview-row">
+            <div class="color-swatch" id="swatch-partner" style="background:#5a7ee0;"></div>
+            <span class="hex-display" id="hex-partner">#5a7ee0</span>
+          </div>
+          <input class="color-note-input" id="note-partner" type="text" placeholder="a word for this color…" maxlength="60">
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="saveToday()" id="save-btn">Save Today's Colors</button>
+      <div class="save-confirmation" id="save-confirmation">Saved to your diary ♡</div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="history-header">
+        <h2>The <em>Archive</em></h2>
+        <span class="entry-count" id="entry-count"></span>
+      </div>
+      <div class="entries-grid" id="entries-grid">
+        <div class="loading">Loading your diary...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// 🔥 FIREBASE CONFIGURATION - REPLACE WITH YOUR VALUES
+// ═══════════════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyC_NouWpnmAWFtxZbtZlgknSTvubGFw7w0",
+  authDomain: "favorite-color-tracker.firebaseapp.com",
+  databaseURL: "https://favorite-color-tracker-default-rtdb.firebaseio.com",
+  projectId: "favorite-color-tracker",
+  storageBucket: "favorite-color-tracker.firebasestorage.app",
+  messagingSenderId: "576978279380",
+  appId: "1:576978279380:web:e589d62531e569af88d441",
+  measurementId: "G-8TTW6F990K"
+};
+
+// Check if Firebase is configured
+const isConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY_HERE";
+
+if (!isConfigured) {
+  document.getElementById('setup-instructions').style.display = 'block';
+} else {
+  // Initialize Firebase
+  try {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    document.getElementById('main-app').style.display = 'block';
+    
+    // ── Database References ────────────────────────────────────────────────
+    const namesRef = db.ref('names');
+    const entriesRef = db.ref('entries');
+
+    // ── Names ──────────────────────────────────────────────────────────────
+    async function getNames() {
+      try {
+        const snapshot = await namesRef.once('value');
+        const data = snapshot.val() || {};
+        return {
+          you: data.you || 'You',
+          partner: data.partner || 'Partner'
+        };
+      } catch (e) {
+        console.error('Error getting names:', e);
+        return { you: 'You', partner: 'Partner' };
+      }
+    }
+
+    async function setName(who, val) {
+      const finalVal = val.trim() || (who === 'you' ? 'You' : 'Partner');
+      try {
+        await namesRef.child(who).set(finalVal);
+      } catch (e) {
+        console.error('Error setting name:', e);
+      }
+    }
+
+    function refreshNames() {
+      namesRef.on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        document.getElementById('name-you-display').textContent = data.you || 'You';
+        document.getElementById('name-partner-display').textContent = data.partner || 'Partner';
+      });
+    }
+
+    // Make names editable on click
+    ['you', 'partner'].forEach(who => {
+      const el = document.getElementById('name-' + who + '-display');
+      el.style.cursor = 'pointer';
+      el.title = 'Click to rename';
+      el.addEventListener('click', async () => {
+        const n = await getNames();
+        const current = n[who];
+        const val = prompt('Enter name for ' + (who === 'you' ? 'you' : 'your partner') + ':', current);
+        if (val !== null) await setName(who, val);
+      });
+    });
+
+    refreshNames();
+
+    // ── Color Wheel ────────────────────────────────────────────────────────
+    function drawWheel(canvas, brightness) {
+      const ctx = canvas.getContext('2d');
+      const cx = canvas.width / 2, cy = canvas.height / 2, r = cx;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let angle = 0; angle < 360; angle++) {
+        const startAngle = (angle - 1) * Math.PI / 180;
+        const endAngle   = (angle + 1) * Math.PI / 180;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        grad.addColorStop(0,   `hsl(${angle},0%,${100*brightness}%)`);
+        grad.addColorStop(1,   `hsl(${angle},100%,${50*brightness}%)`);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+    }
+
+    const state = {
+      you:     { h: 348, s: 0.6, brightness: 1, hex: '#e05a6e', cx: 90, cy: 90 },
+      partner: { h: 220, s: 0.6, brightness: 1, hex: '#5a7ee0', cx: 90, cy: 90 }
+    };
+
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      };
+      return '#' + [f(0),f(8),f(4)].map(x => Math.round(255*x).toString(16).padStart(2,'0')).join('');
+    }
+
+    function pickColor(who, canvasX, canvasY) {
+      const canvas = document.getElementById('wheel-' + who);
+      const r = canvas.width / 2;
+      const dx = canvasX - r, dy = canvasY - r;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > r) return;
+
+      const angle = ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
+      const sat   = dist / r;
+      state[who].h = angle;
+      state[who].s = sat;
+
+      const l = 50 * state[who].brightness;
+      const s = 100 * sat;
+      const hex = hslToHex(angle, s, l);
+      state[who].hex = hex;
+      state[who].cx = canvasX;
+      state[who].cy = canvasY;
+
+      const scaledX = canvasX / 2, scaledY = canvasY / 2;
+      document.getElementById('cursor-' + who).style.left = scaledX + 'px';
+      document.getElementById('cursor-' + who).style.top  = scaledY + 'px';
+      document.getElementById('cursor-' + who).style.background = hex;
+      document.getElementById('swatch-' + who).style.background = hex;
+      document.getElementById('hex-' + who).textContent = hex;
+    }
+
+    function setupWheel(who) {
+      const canvas = document.getElementById('wheel-' + who);
+      const bright = document.getElementById('bright-' + who);
+
+      drawWheel(canvas, state[who].brightness);
+
+      let dragging = false;
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
+      }
+
+      canvas.addEventListener('mousedown',  e => { dragging = true; const [x,y] = getPos(e); pickColor(who, x, y); });
+      canvas.addEventListener('mousemove',  e => { if (dragging) { const [x,y] = getPos(e); pickColor(who, x, y); }});
+      window.addEventListener('mouseup',   () => { dragging = false; });
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); const [x,y] = getPos(e); pickColor(who, x, y); }, {passive:false});
+      canvas.addEventListener('touchmove',  e => { e.preventDefault(); const [x,y] = getPos(e); pickColor(who, x, y); }, {passive:false});
+
+      bright.addEventListener('input', () => {
+        state[who].brightness = parseFloat(bright.value);
+        drawWheel(canvas, state[who].brightness);
+        const l = 50 * state[who].brightness;
+        const hex = hslToHex(state[who].h, state[who].s * 100, l);
+        state[who].hex = hex;
+        document.getElementById('swatch-' + who).style.background = hex;
+        document.getElementById('hex-' + who).textContent = hex;
+        document.getElementById('cursor-' + who).style.background = hex;
+      });
+
+      bright.style.background = `linear-gradient(to right, #fff, hsl(${state[who].h},70%,50%), #000)`;
+    }
+
+    setupWheel('you');
+    setupWheel('partner');
+
+    pickColor('you',     200, 260);
+    pickColor('partner', 160, 120);
+
+    // ── Today label ────────────────────────────────────────────────────────
+    const todayDate = new Date();
+    document.getElementById('today-label').textContent =
+      todayDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+    // ── Storage ────────────────────────────────────────────────────────────
+    async function saveToday() {
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      
+      const dateKey = todayDate.toISOString().slice(0,10);
+      const n = await getNames();
+      
+      const entry = {
+        date: dateKey,
+        timestamp: Date.now(),
+        you: { 
+          color: state.you.hex, 
+          note: document.getElementById('note-you').value.trim(), 
+          name: n.you 
+        },
+        partner: { 
+          color: state.partner.hex, 
+          note: document.getElementById('note-partner').value.trim(), 
+          name: n.partner 
+        }
+      };
+
+      try {
+        await entriesRef.child(dateKey).set(entry);
+        
+        const conf = document.getElementById('save-confirmation');
+        conf.classList.add('show');
+        setTimeout(() => conf.classList.remove('show'), 2400);
+      } catch (e) {
+        console.error('Error saving:', e);
+        alert('Failed to save. Please check your internet connection.');
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+
+    window.saveToday = saveToday;
+
+    async function deleteEntry(dateKey) {
+      if (!confirm('Remove this entry from the shared diary?')) return;
+      try {
+        await entriesRef.child(dateKey).remove();
+      } catch (e) {
+        console.error('Error deleting:', e);
+        alert('Failed to delete. Please try again.');
+      }
+    }
+
+    window.deleteEntry = deleteEntry;
+
+    function renderHistory() {
+      entriesRef.orderByChild('timestamp').on('value', (snapshot) => {
+        const grid = document.getElementById('entries-grid');
+        const countEl = document.getElementById('entry-count');
+        
+        const entries = [];
+        snapshot.forEach((child) => {
+          entries.unshift(child.val()); // Add to beginning to show newest first
+        });
+
+        countEl.textContent = entries.length === 0 ? '' : entries.length + (entries.length === 1 ? ' entry' : ' entries');
+
+        if (!entries.length) {
+          grid.innerHTML = '<div class="empty-state">Your diary is empty — save your first colors above ♡</div>';
+          return;
+        }
+
+        grid.innerHTML = entries.map(e => {
+          const d = new Date(e.date + 'T12:00:00');
+          const day = d.getDate();
+          const mon = d.toLocaleString('en-US', {month:'short'}).toUpperCase();
+          const yr  = d.getFullYear();
+
+          return `
+          <div class="entry-card">
+            <div class="entry-date">
+              <div class="day-num">${day}</div>
+              <div class="month-yr">${mon} ${yr}</div>
+            </div>
+            <div class="entry-person">
+              <div class="entry-swatch" style="background:${e.you.color};"></div>
+              <div class="entry-person-info">
+                <div class="person-name">${escHtml(e.you.name)}</div>
+                <div class="person-hex">${e.you.color}</div>
+                ${e.you.note ? `<div class="person-note">"${escHtml(e.you.note)}"</div>` : ''}
+              </div>
+            </div>
+            <div class="entry-person">
+              <div class="entry-swatch" style="background:${e.partner.color};"></div>
+              <div class="entry-person-info">
+                <div class="person-name">${escHtml(e.partner.name)}</div>
+                <div class="person-hex">${e.partner.color}</div>
+                ${e.partner.note ? `<div class="person-note">"${escHtml(e.partner.note)}"</div>` : ''}
+              </div>
+            </div>
+            <button class="delete-btn" onclick="deleteEntry('${e.date}')" title="Remove entry">×</button>
+          </div>`;
+        }).join('');
+      });
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    renderHistory();
+
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    document.getElementById('setup-instructions').style.display = 'block';
+    document.getElementById('main-app').style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>
